@@ -119,7 +119,7 @@ export function createControlPointManager<T extends Vector2d, S, P = {}>(
                 return { x: 0, y: 0 };
             }
 
-            const { x, y } = groupRef.current.getRelativePointerPosition();
+            const { x, y } = groupRef.current.getRelativePointerPosition()!;
             return { x, y: -y };
         }, [groupRef]);
 
@@ -135,8 +135,8 @@ export function createControlPointManager<T extends Vector2d, S, P = {}>(
                     // in screen coordinates, so back out the rotation.
                     const handleOffset = rotateCoord(
                         {
-                            x: handleCornerOffset.x - e.target.offsetX(),
-                            y: handleCornerOffset.y - e.target.offsetY(),
+                            x: handleCornerOffset!.x - e.target.offsetX(),
+                            y: handleCornerOffset!.y - e.target.offsetY(),
                         },
                         -rotation,
                     );

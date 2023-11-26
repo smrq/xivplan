@@ -1,17 +1,11 @@
 import { classNamesFunction, IStyle, Theme, useTheme } from '@fluentui/react';
-import React, { useEffect, useMemo } from 'react';
-import { useLocation, useSearchParams, useLoaderData } from 'react-router-dom';
-import { DirtyProvider } from './DirtyProvider';
-import { EditModeProvider } from './EditModeProvider';
+import React, { useEffect } from 'react';
+import { useLoaderData, LoaderFunction } from 'react-router-dom';
 import { textToScene } from './file';
 import { ViewHotkeyHandler } from './HotkeyHandler';
-import { MainCommandBar } from './MainCommandBar';
-import { DetailsPanel } from './panel/DetailsPanel';
-import { MainPanel } from './panel/MainPanel';
-import { PanelDragProvider } from './PanelDragProvider';
 import { SceneRenderer } from './render/SceneRenderer';
+import { Scene } from './scene';
 import { SceneProvider, useScene } from './SceneProvider';
-import { SelectionProvider } from './SelectionProvider';
 import { StepSelect } from './StepSelect';
 import { useIsDirty } from './useIsDirty';
 
@@ -20,26 +14,33 @@ interface IContentStyles {
 }
 const getClassNames = classNamesFunction<Theme, IContentStyles>();
 
-export async function loader({ params }) {
+interface ViewPageLoaderData {
+    initialScene: Scene | undefined;
+}
+
+export const loader: LoaderFunction = async ({ params }) => {
     let data;
     switch (params.provider) {
         case 'gist':
-            const res = await fetch(`https://api.github.com/gists/${params.data}`);
+            const res = await fetch(`https://api.github.com/gists/${params.data!}`);
             const json = await res.json();
             data = json.files['data.txt'].content;
             break;
 
         case 'data':
         case undefined:
-            data = decodeURIComponent(params.data);
+            data = decodeURIComponent(params.data!);
             break;
     }
     const initialScene = data ? textToScene(data) : undefined;
-    return { initialScene };
+    const result: ViewPageLoaderData = {
+        initialScene,
+    };
+    return result;
 }
 
-export const ViewPage: React.FC<MainPageProps> = () => {
-    const { initialScene } = useLoaderData();
+export const ViewPage: React.FC = () => {
+    const { initialScene } = useLoaderData() as ViewPageLoaderData;
     return (
         <SceneProvider initialScene={initialScene}>
             <ViewPageContent />

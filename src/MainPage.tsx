@@ -1,6 +1,6 @@
 import { classNamesFunction, IStyle, Theme, useTheme } from '@fluentui/react';
 import React, { useEffect, useMemo } from 'react';
-import { useLocation, useSearchParams, useLoaderData } from 'react-router-dom';
+import { useLocation, useSearchParams, useLoaderData, LoaderFunction } from 'react-router-dom';
 import { DirtyProvider } from './DirtyProvider';
 import { EditModeProvider } from './EditModeProvider';
 import { textToScene } from './file';
@@ -10,6 +10,7 @@ import { DetailsPanel } from './panel/DetailsPanel';
 import { MainPanel } from './panel/MainPanel';
 import { PanelDragProvider } from './PanelDragProvider';
 import { SceneRenderer } from './render/SceneRenderer';
+import { Scene } from './scene';
 import { SceneProvider, useScene } from './SceneProvider';
 import { SelectionProvider } from './SelectionProvider';
 import { StepSelect } from './StepSelect';
@@ -20,7 +21,11 @@ interface IContentStyles {
 }
 const getClassNames = classNamesFunction<Theme, IContentStyles>();
 
-export async function loader({ params }) {
+interface MainPageLoaderData {
+    initialScene: Scene | undefined;
+}
+
+export const loader: LoaderFunction = async ({ params }) => {
     let data;
     switch (params.provider) {
         case 'gist':
@@ -31,14 +36,17 @@ export async function loader({ params }) {
 
         case 'data':
         case undefined:
-            data = decodeURIComponent(params.data);
+            data = decodeURIComponent(params.data!);
             break;
     }
     const initialScene = data ? textToScene(data) : undefined;
-    return { initialScene };
+    const result: MainPageLoaderData = {
+        initialScene,
+    };
+    return result;
 }
 
-export async function legacyLoader({ request }) {
+export const legacyLoader: LoaderFunction = async ({ request }) => {
     let data;
     const url = new URL(request.url);
     const param = url.searchParams.get('plan');
@@ -46,11 +54,14 @@ export async function legacyLoader({ request }) {
         data = decodeURIComponent(param);
     }
     const initialScene = data ? textToScene(data) : undefined;
-    return { initialScene };
+    const result: MainPageLoaderData = {
+        initialScene,
+    };
+    return result;
 }
 
-export const MainPage: React.FC<MainPageProps> = () => {
-    const { initialScene } = useLoaderData();
+export const MainPage: React.FC = () => {
+    const { initialScene } = useLoaderData() as MainPageLoaderData;
     return (
         <SceneProvider initialScene={initialScene}>
             <DirtyProvider>

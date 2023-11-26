@@ -360,7 +360,7 @@ const SaveLocalFile: React.FC<SourceTabProps> = ({ onDismiss }) => {
                 <TextField
                     label="File name"
                     value={name}
-                    onChange={(e, v) => setName(v)}
+                    onChange={(e, v) => setName(v || '')}
                     onKeyPress={onKeyPress}
                     errorMessage={alreadyExists ? 'A file with this name already exists.' : undefined}
                 />
