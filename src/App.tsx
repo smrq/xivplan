@@ -1,10 +1,11 @@
 import { classNamesFunction, Theme, useTheme } from '@fluentui/react';
 import { IStyle } from '@fluentui/style-utilities';
 import React, { PropsWithChildren } from 'react';
-import { Outlet, Route, Routes } from 'react-router-dom';
+import { createHashRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { CommandBarProvider } from './CommandBarProvider';
 import { HelpProvider } from './HelpProvider';
-import { MainPage } from './MainPage';
+import { MainPage, loader as mainLoader, legacyLoader as mainLegacyLoader } from './MainPage';
+import { ViewPage, loader as viewLoader } from './ViewPage';
 import { SiteHeader } from './SiteHeader';
 import { ThemeProvider } from './ThemeProvider';
 
@@ -61,14 +62,34 @@ const Layout: React.FC = () => {
     );
 };
 
+const router = createHashRouter([
+    {
+        element: <Layout />,
+        children: [
+            {
+                path: '/view/:provider?/:data',
+                element: <ViewPage />,
+                loader: viewLoader,
+            },
+            {
+                path: '/plan/:provider?/:data',
+                element: <MainPage />,
+                loader: mainLoader,
+            },
+            {
+                path: '/',
+                index: true,
+                element: <MainPage />,
+                loader: mainLegacyLoader,
+            },
+        ]
+    }
+]);
+
 export const App: React.FC = () => {
     return (
         <BaseProviders>
-            <Routes>
-                <Route path="/" element={<Layout />}>
-                    <Route index element={<MainPage />} />
-                </Route>
-            </Routes>
+            <RouterProvider router={router} />
         </BaseProviders>
     );
 };

@@ -4,7 +4,7 @@ import { useLocation, useSearchParams, useLoaderData } from 'react-router-dom';
 import { DirtyProvider } from './DirtyProvider';
 import { EditModeProvider } from './EditModeProvider';
 import { textToScene } from './file';
-import { RegularHotkeyHandler } from './HotkeyHandler';
+import { ViewHotkeyHandler } from './HotkeyHandler';
 import { MainCommandBar } from './MainCommandBar';
 import { DetailsPanel } from './panel/DetailsPanel';
 import { MainPanel } from './panel/MainPanel';
@@ -38,35 +38,16 @@ export async function loader({ params }) {
     return { initialScene };
 }
 
-export async function legacyLoader({ request }) {
-    let data;
-    const url = new URL(request.url);
-    const param = url.searchParams.get('plan');
-    if (param) {
-        data = decodeURIComponent(param);
-    }
-    const initialScene = data ? textToScene(data) : undefined;
-    return { initialScene };
-}
-
-export const MainPage: React.FC<MainPageProps> = () => {
+export const ViewPage: React.FC<MainPageProps> = () => {
     const { initialScene } = useLoaderData();
     return (
         <SceneProvider initialScene={initialScene}>
-            <DirtyProvider>
-                <EditModeProvider>
-                    <SelectionProvider>
-                        <PanelDragProvider>
-                            <MainPageContent />
-                        </PanelDragProvider>
-                    </SelectionProvider>
-                </EditModeProvider>
-            </DirtyProvider>
+            <ViewPageContent />
         </SceneProvider>
     );
 };
 
-const MainPageContent: React.FC = () => {
+const ViewPageContent: React.FC = () => {
     usePageTitle();
     const theme = useTheme();
     const classNames = getClassNames(() => {
@@ -82,18 +63,11 @@ const MainPageContent: React.FC = () => {
 
     return (
         <>
-            <RegularHotkeyHandler />
-            <MainCommandBar />
-
-            <MainPanel />
-
-            <StepSelect />
-
+            <ViewHotkeyHandler />
+            <StepSelect readonly />
             <div className={classNames.stage}>
                 <SceneRenderer />
             </div>
-
-            <DetailsPanel />
         </>
     );
 };

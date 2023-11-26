@@ -117,7 +117,11 @@ const getStepSelectStyles: IStyleFunction<Theme, IStepSelectStyles> = (theme) =>
     };
 };
 
-export const StepSelect: React.FC = () => {
+interface StepSelectProps {
+    readonly?: boolean;
+}
+
+export const StepSelect: React.FC = ({ readonly }) => {
     const { scene } = useScene();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const steps = useMemo(() => scene.steps.map((_, i) => i), [scene.steps.length]);
@@ -134,10 +138,12 @@ export const StepSelect: React.FC = () => {
                     </li>
                 ))}
             </ul>
-            <Stack horizontal tokens={{ childrenGap: BUTTON_SPACING }}>
-                <AddStepButton />
-                <RemoveStepButton />
-            </Stack>
+            {!readonly && (
+                <Stack horizontal tokens={{ childrenGap: BUTTON_SPACING }}>
+                    <AddStepButton />
+                    <RemoveStepButton />
+                </Stack>
+            )}
         </Stack>
     );
 };
