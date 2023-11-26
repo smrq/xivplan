@@ -307,7 +307,7 @@ const ImportFromString: React.FC<SourceTabProps> = ({ onDismiss }) => {
 };
 
 function getInitialName(source: FileSource | undefined) {
-    return source?.type === 'local' ? source.name : undefined;
+    return source?.type === 'local' ? source.name : '';
 }
 
 const SaveLocalFile: React.FC<SourceTabProps> = ({ onDismiss }) => {
