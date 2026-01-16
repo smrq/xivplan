@@ -1,20 +1,14 @@
 import { makeStyles, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { LoaderFunction } from 'react-router-dom';
-import { EditModeProvider } from './EditModeProvider';
-import { RegularHotkeyHandler } from './HotkeyHandler';
-import { MainToolbar } from './MainToolbar';
-import { PanelDragProvider } from './PanelDragProvider';
+import { LoaderFunction, useLoaderData } from 'react-router-dom';
+import { ViewHotkeyHandler } from './HotkeyHandler';
+// import { PanelDragProvider } from './PanelDragProvider';
 import { SceneLoadErrorNotifier } from './SceneLoadErrorNotifier';
-import { useScene } from './SceneProvider';
-import { SelectionProvider } from './SelectionProvider';
+import { SceneProvider, useScene } from './SceneProvider';
 import { StepSelect } from './StepSelect';
 import { textToScene } from './file';
-import { DetailsPanel } from './panel/DetailsPanel';
-import { MainPanel } from './panel/MainPanel';
 import { SceneRenderer } from './render/SceneRenderer';
 import { MIN_STAGE_WIDTH } from './theme';
-import { useIsDirty } from './useIsDirty';
 import { removeFileExtension } from './util';
 
 export const loader: LoaderFunction = async ({ params }) => {
@@ -35,30 +29,16 @@ export const loader: LoaderFunction = async ({ params }) => {
     return { initialScene };
 }
 
-export const legacyLoader: LoaderFunction = async ({ request }) => {
-    let data;
-    const url = new URL(request.url);
-    const param = url.searchParams.get('plan');
-    if (param) {
-        data = decodeURIComponent(param);
-    }
-    const initialScene = data ? textToScene(data) : undefined;
-    return { initialScene };
-}
-
-export const MainPage: React.FC = () => {
+export const ViewPage: React.FC = () => {
+    const { initialScene } = useLoaderData();
     return (
-        <EditModeProvider>
-            <SelectionProvider>
-                <PanelDragProvider>
-                    <MainPageContent />
-                </PanelDragProvider>
-            </SelectionProvider>
-        </EditModeProvider>
+        <SceneProvider initialScene={initialScene}>
+            <ViewPageContent />
+        </SceneProvider>
     );
 };
 
-const MainPageContent: React.FC = () => {
+const ViewPageContent: React.FC = () => {
     const classes = useStyles();
     const title = usePageTitle();
 
@@ -66,39 +46,25 @@ const MainPageContent: React.FC = () => {
         <>
             <title>{title}</title>
 
-            <RegularHotkeyHandler />
+            <ViewHotkeyHandler />
             <SceneLoadErrorNotifier />
-
-            <MainToolbar />
-
-            {/* TODO: make panel collapsable */}
-            <MainPanel />
-
             <StepSelect />
-
             <div className={classes.stage}>
                 <SceneRenderer />
             </div>
-
-            {/* TODO: make panel collapsable */}
-            <DetailsPanel />
         </>
     );
 };
 
-const TITLE = 'XIVPlan';
+const TITLE = 'FFXIV Raid Planner';
 
 function usePageTitle() {
     const { source } = useScene();
-    const isDirty = useIsDirty();
 
     let title = TITLE;
     if (source) {
         title += ': ';
         title += removeFileExtension(source?.name);
-    }
-    if (isDirty) {
-        title += ' ●';
     }
     return title;
 }

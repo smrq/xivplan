@@ -458,6 +458,32 @@ const StepHandler: React.FC = () => {
     return null;
 };
 
+const ViewHandler: React.FC = () => {
+    const { dispatch } = useScene();
+
+    useHotkeys(
+        'left',
+        { category: CATEGORY_STEPS, help: 'Previous step' },
+        (e) => {
+            dispatch({ type: 'previousStep' });
+            e.preventDefault();
+        },
+        [dispatch],
+    );
+
+    useHotkeys(
+        'right',
+        { category: CATEGORY_STEPS, help: 'Next step' },
+        (e) => {
+            dispatch({ type: 'nextStep' });
+            e.preventDefault();
+        },
+        [dispatch],
+    );
+
+    return null;
+};
+
 export const RegularHotkeyHandler: React.FC = () => {
     return (
         <>
@@ -474,6 +500,14 @@ export const SceneHotkeyHandler: React.FC = () => {
             <EditActionHandler />
             <DrawModeHandler />
             <StepHandler />
+        </>
+    );
+};
+
+export const ViewHotkeyHandler: React.FC = () => {
+    return (
+        <>
+            <ViewHandler />
         </>
     );
 };

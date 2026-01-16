@@ -1,17 +1,18 @@
 import { makeStyles, Spinner, Toaster, tokens } from '@fluentui/react-components';
 import React, { PropsWithChildren, Suspense } from 'react';
 import { HotkeysProvider } from 'react-hotkeys-hook';
-import { createBrowserRouter, createRoutesFromElements, Outlet, Route, RouterProvider } from 'react-router-dom';
+import { createHashRouter, Outlet, RouterProvider, useLoaderData } from 'react-router-dom';
 import { DirtyProvider } from './DirtyProvider';
-import { useSceneFromUrl } from './file/share';
 import { FileOpenPage } from './FileOpenPage';
 import { HelpProvider } from './HelpProvider';
-import { MainPage } from './MainPage';
+import { legacyLoader as mainLegacyLoader, loader as mainLoader, MainPage } from './MainPage';
+import { Scene } from './scene';
 import { SceneProvider } from './SceneProvider';
 import { SiteHeader } from './SiteHeader';
 import { ThemeProvider } from './ThemeProvider';
 import { useFileLoaderDropTarget } from './useFileLoader';
 import { HotkeyScopes } from './useHotkeys';
+import { loader as viewLoader, ViewPage } from './ViewPage';
 
 const useStyles = makeStyles({
     root: {
@@ -48,14 +49,14 @@ const useStyles = makeStyles({
     },
 });
 
-const BaseProviders: React.FC<PropsWithChildren> = ({ children }) => {
-    const sceneFromUrl = useSceneFromUrl();
-
+const BaseProviders: React.FC<PropsWithChildren<{ initialScene?: Scene }>> = ({ children, initialScene }) => {
     return (
         <HotkeysProvider initiallyActiveScopes={[HotkeyScopes.Default, HotkeyScopes.AlwaysEnabled]}>
             <HelpProvider>
-                <SceneProvider initialScene={sceneFromUrl}>
-                    <DirtyProvider>{children}</DirtyProvider>
+                <SceneProvider initialScene={initialScene}>
+                    <DirtyProvider>
+                        {children}
+                    </DirtyProvider>
                 </SceneProvider>
             </HelpProvider>
         </HotkeysProvider>
@@ -77,15 +78,23 @@ const Layout: React.FC = () => {
     return (
         <ThemeProvider>
             <Suspense fallback={<LoadingFallback />}>
-                <BaseProviders>
-                    <Root />
-                </BaseProviders>
+                <Outlet />
             </Suspense>
         </ThemeProvider>
     );
 };
 
-const Root: React.FC = () => {
+const Page: React.FC<{ page: React.FC }> = ({ page }) => {
+    const { initialScene } = useLoaderData() ?? {};
+
+    return (
+        <BaseProviders initialScene={initialScene}>
+            <PageContent page={page} />
+        </BaseProviders>
+    );
+};
+
+const PageContent: React.FC<{ page: React.FC }> = ({ page: Page }) => {
     const classes = useStyles();
     const { onDragOver, onDrop, renderModal } = useFileLoaderDropTarget();
 
@@ -94,21 +103,40 @@ const Root: React.FC = () => {
             <div className={classes.root} onDragOver={onDragOver} onDrop={onDrop}>
                 <Toaster position="top" />
                 <SiteHeader className={classes.header} />
-                <Outlet />
+                <Page />
             </div>
             {renderModal()}
         </>
     );
 };
 
-const router = createBrowserRouter(
-    createRoutesFromElements(
-        <Route path="/" element={<Layout />}>
-            <Route index element={<MainPage />} />
-            <Route path="open" element={<FileOpenPage />} />
-        </Route>,
-    ),
-);
+const router = createHashRouter([
+    {
+        element: <Layout />,
+        children: [
+            {
+                path: '/view/:provider?/:data',
+                element: <Page page={ViewPage} />,
+                loader: viewLoader,
+            },
+            {
+                path: '/plan/:provider?/:data',
+                element: <Page page={MainPage} />,
+                loader: mainLoader,
+            },
+            {
+                path: '/open',
+                element: <Page page={FileOpenPage} />,
+            },
+            {
+                path: '/',
+                index: true,
+                element: <Page page={MainPage} />,
+                loader: mainLegacyLoader,
+            },
+        ]
+    }
+]);
 
 export const App: React.FC = () => {
     return <RouterProvider router={router} />;

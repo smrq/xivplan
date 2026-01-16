@@ -285,6 +285,70 @@ const StepItem: React.FC<StepItemProps> = ({ ref, scene, step, className, ...pro
     );
 };
 
+/*
+const BUTTON_SPACING = 4;
+
+interface IStepSelectStyles {
+    root: IStyle;
+}
+
+const getClassNames = classNamesFunction<Theme, IStepSelectStyles>();
+
+const getStepSelectStyles: IStyleFunction<Theme, IStepSelectStyles> = (theme) => {
+    return {
+        root: {
+            gridArea: 'steps',
+            backgroundColor: theme.palette.neutralLighterAlt,
+            padding: 4,
+
+            ul: {
+                display: 'flex',
+                flexFlow: 'row wrap',
+
+                margin: 0,
+                padding: 0,
+            } as IStyle,
+
+            li: {
+                listStyle: 'none',
+                margin: BUTTON_SPACING / 2,
+            } as IStyle,
+        } as IStyle,
+    };
+};
+
+interface StepSelectProps {
+    readonly?: boolean;
+}
+
+export const StepSelect: React.FC = ({ readonly }) => {
+    const { scene } = useScene();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const steps = useMemo(() => scene.steps.map((_, i) => i), [scene.steps.length]);
+
+    const theme = useTheme();
+    const classNames = getClassNames(getStepSelectStyles, theme);
+
+    return (
+        <Stack horizontal tokens={{ childrenGap: BUTTON_SPACING }} className={classNames.root}>
+            <ul>
+                {steps.map((i) => (
+                    <li key={i}>
+                        <StepButton index={i} />
+                    </li>
+                ))}
+            </ul>
+            {!readonly && (
+                <Stack horizontal tokens={{ childrenGap: BUTTON_SPACING }}>
+                    <AddStepButton />
+                    <RemoveStepButton />
+                </Stack>
+            )}
+        </Stack>
+    );
+};
+*/
+
 const useStyles = makeStyles({
     root: {
         gridArea: 'steps',
